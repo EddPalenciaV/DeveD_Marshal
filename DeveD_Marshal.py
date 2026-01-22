@@ -1,4 +1,7 @@
 import sys
+from Revisionator import remove_revision_tags, tag_drawings
+from pdf_Organiser import supersede_drawings
+from Transmit_Auto1000 import Save_as_PDF
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout
 
 def myApp():
