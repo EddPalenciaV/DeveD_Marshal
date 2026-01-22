@@ -1,6 +1,6 @@
 import sys
 from Revisionator import remove_revision_tags, tag_drawings
-from pdf_Organiser import supersede_drawings
+from pdf_Organiser import supersede_drawings, set_SS_directory, is_currentDirectory
 from Transmit_Auto1000 import Save_as_PDF
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout
 
@@ -21,6 +21,7 @@ def myApp():
     app.exec()
 
 if __name__ == "__main__": 
+    directory = is_currentDirectory()
     myApp()
     print("DeveD Marshal - Sort, Tag and Report Drawings")
     print("Created by Edd Palencia-Vanegas - January 2026. All rights reserved.")
