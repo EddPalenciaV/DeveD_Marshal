@@ -76,6 +76,8 @@ def is_currentDirectory():
     return directory
 
 def set_SS_directory(department):
+    directory = is_currentDirectory()
+    
     # Get the current date from the system
     get_date = datetime.now()
     # Format the date as a string in the order: last two digits of the year, two digits month, and two digits day
@@ -108,6 +110,8 @@ def supersede_drawings(charkey, ss_directory):
 #TODO: Refactor repetitive code again into one function with parameters
 # THIS FUNCTION GROUPS AND ORGANISES .PDF FILES BY THEIR ALPHABETICAL VALUE INSIDE THE BRACKETS ---------------------------------------------
 def supersede_alphabetical(charkey, ss_directory):
+    directory = is_currentDirectory()
+    
     # Function to extract the alphabetic value within square brackets
     def extract_alpha_value(filename):
         match = re.search(r'\[([a-zA-Z])\]', filename)
@@ -143,6 +147,8 @@ def supersede_alphabetical(charkey, ss_directory):
 
 # THIS FUNCTION GROUPS AND ORGANISES .PDF FILES BY THEIR NUMERICAL VALUE INSIDE THE BRACKETS ---------------------------------------------
 def supersede_numerical(charkey, ss_directory):
+    directory = is_currentDirectory()
+    
     # Function to extract the numeric value within square brackets
     def extract_digit_value(filename):
         match = re.search(r'\[(\d+)\]', filename)
@@ -178,6 +184,8 @@ def supersede_numerical(charkey, ss_directory):
 
 # THIS FUNCTION GROUPS, COMPARES AND ORGANISES .PDF FILES BY THEIR NUMERICAL AND ALPHABETICAL VALUE INSIDE THE BRACKETS ---------------------------------------
 def supersede_Num_vs_Alpha(charkey, ss_directory):
+    directory = is_currentDirectory()
+    
     # Define a pattern to match the file names
     pattern = re.compile(r"(.*\[)(.*)(\].*.pdf)")
 
