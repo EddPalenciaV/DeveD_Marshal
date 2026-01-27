@@ -9,6 +9,7 @@ import win32com.client
 from openpyxl import load_workbook
 from pathlib import Path
 from datetime import datetime
+from PyQt6.QtWidgets import QInputDialog, QMessageBox
 
 def find_excel_transmittal():
     print("Searching for Transmittal Excel file...")        
@@ -89,17 +90,28 @@ def Catch_Drawings():
     else:        
         raise ValueError("No PDF drawings found to process.")
 
-def Request_Get_Date():
+def Request_Get_Date(parent_window=None):
     rootDirectory = os.path.abspath(".")
     print("Choose a date for the transmittal (DD/MM/YY), from the following options: ")
     while True:
-        # Print the menu options        
-        print("1. Today's Date")
-        print("2. Enter a Custom Date")
-        print("3. Exit Program")
-
+        # Print the menu options
+        items = ["1. Today's Date", "2. Enter a Custom Date", "3. Exit Program"]
         # Prompt for user input
-        choice = input("Enter your choice (1-3): ")
+        choice, ok = QInputDialog.getItem(
+            parent_window,
+            "Select Date Option",
+            "Choose a date for the transmittal:",
+            items,
+            0,
+            False
+        )
+
+        if not ok:  # User clicked Cancel
+            print("Date selection cancelled.")
+            return None
+
+        # Extract the number from the choice
+        choice = choice[0]  
         # Activate choice
         if choice == '1':
             from datetime import datetime
@@ -107,18 +119,22 @@ def Request_Get_Date():
             date_string = now.strftime("%d/%m/%y")
             break
         elif choice == '2':
-            date_string = input("Enter the date in the following format DD/MM/YY : ")
+            date_string, ok = QInputDialog.getText(
+                parent_window,
+                "Enter Custom Date in format DD/MM/YY:"
+            )
+            if not ok:
+                continue
             if len(date_string) != 8 or date_string[2] != '/' or date_string[5] != '/':
-                print("Invalid date format. Please try again.")
-                input("Press Enter to continue...")
+                QMessageBox.warning(parent_window, "Invalid date Format", "Please use DD/MM/YY format.")
                 continue
             break
         elif choice == '3':
             print("Exiting the program. Goodbye!")
-            sys.exit(0)
+            return None
         else:
-            print("Invalid choice. Please enter a number between 1 and 3.")
-            input("Press Enter to continue...")
+            QMessageBox.warning(parent_window, "Invalid choice. Please enter a number between 1 and 3.")
+            continue
     # Load transmittal Excel file
     transmittal = find_excel_transmittal()
     workbook = load_workbook(transmittal)
@@ -157,23 +173,32 @@ def Request_Get_Date():
 
     return os.path.join(rootDirectory, output_filename)
 
-def Update_Transmittal():
+def Update_Transmittal(parent_window=None):
     # Load transmittal Excel file
     print("Loading new Transmittal Excel file...")
-    transmittal = Request_Get_Date()
+    transmittal = Request_Get_Date(parent_window)
     # transmittal = r"C:\Users\eddpa\Desktop\Transmittal_Auto1000\Transmittal 250418.xlsx"    
     workbook = xw.Book(transmittal)
 
     print("Choose sheet to process:")
     while True:
         # Print the menu options
-        print("1. CIVIL")
-        print("2. STRUCTURE")
-        print("3. ARCHITECT")
-        print("4. Exit Program")
-
+        items = ["1. CIVIL", "2. STRUCTURE", "3. ARCHITECT", "4. Exit Program"]
         # Prompt for user input
-        choice = input("Enter your choice (1-3): ")
+        choice, ok = QInputDialog.getItem(
+            parent_window,
+            "Select Sheet",
+            "Choose sheet to process:",
+            items,
+            0,
+            False
+        )
+
+        if not ok:  # User clicked Cancel
+            print("Sheet selection cancelled.")
+            return None, None
+
+        choice = choice[0]  # Extract the number        
         # Activate choice
         if choice == '1':
             # Check if 'CIVIL' sheet exists. Select it if it does
@@ -181,8 +206,8 @@ def Update_Transmittal():
                 print("CIVIL sheet found.")
                 worksheet = workbook.sheets["CIVIL"]
                 sheet_name = "CIVIL"
-            else:
-                raise ValueError("Sheet 'CIVIL' not found in the Excel file. Check sheet name spelling")
+            # else:
+            #     raise ValueError("Sheet 'CIVIL' not found in the Excel file. Check sheet name spelling")
             break
         elif choice == '2':
             # Check if 'ARCHITECT' sheet exists. Select it if it does
@@ -190,8 +215,8 @@ def Update_Transmittal():
                 print("ARCHITECT sheet found.")
                 worksheet = workbook.sheets["ARCHITECT"]
                 sheet_name = "ARCHITECT"
-            else:
-                raise ValueError("Sheet 'ARCHITECT' not found in the Excel file. Check sheet name spelling")
+            # else:
+            #     raise ValueError("Sheet 'ARCHITECT' not found in the Excel file. Check sheet name spelling")
             break
         elif choice == '3':
             # Check if 'STRUCTURE' sheet exists. Select it if it does
@@ -199,12 +224,12 @@ def Update_Transmittal():
                 print("STRUCTURE sheet found.")
                 worksheet = workbook.sheets["STRUCTURE"]
                 sheet_name = "STRUCTURE"
-            else:
-                raise ValueError("Sheet 'ARCHITECT' not found in the Excel file. Check sheet name spelling")
+            # else:
+            #     raise ValueError("Sheet 'STRUCTURE' not found in the Excel file. Check sheet name spelling")
             break
         elif choice == '4':
             print("Exiting the program. Goodbye!")
-            sys.exit(0)
+            return None, None
         else:
             print("Invalid choice. Please enter a number between 1 and 3.")
             input("Press Enter to continue...")
@@ -371,82 +396,87 @@ def Update_Transmittal():
 
     return transmittal, sheet_name
 
-def Save_as_PDF():
+def Save_as_PDF(parent_window=None):
     """
     Saves a specific worksheet from an Excel file to a PDF with A4 format
     by controlling the Excel application via COM.
     """
-    excel_path, sheet_name = Update_Transmittal()
-
-    # Check if Overwrite_Transmittal() succeeded
-    if excel_path is None or sheet_name is None:
-        print("Error: Could not generate transmittal file. Aborting PDF export.")
-        return
-
-    currentDir = os.path.abspath(".")
-    pattern = r"\btransmittal (\d{6})\.xlsx\b"
-    match = re.search(pattern, excel_path, re.IGNORECASE)
-    if match:
-        pdf_name = f"Transmittal {match.group(1)}.pdf"
-        pdf_path = os.path.join(currentDir, pdf_name)
-    else:
-        print("Transmittal filename does not match expected pattern.")
-        print("Please check the name matches: Transmittal YYMMDD.xlsx")
-        return
-
-    print(f"\nConverting '{sheet_name}' from '{excel_path}' to PDF using MS Excel...")
-
-    excel = None  # Initialize excel variable
-    workbook = None # Initialize workbook variable
     try:
-        # Get absolute paths, which are required for COM
-        excel_abs_path = os.path.abspath(excel_path).replace("/", "\\")
-        pdf_abs_path = os.path.abspath(pdf_path).replace("/", "\\")
+        excel_path, sheet_name = Update_Transmittal(parent_window)
 
-        # CRITICAL: Verify the file exists before attempting to open
-        if not os.path.exists(excel_abs_path):
-            print(f"Error: File not found at '{excel_abs_path}'")
+        # Check if Overwrite_Transmittal() succeeded
+        if excel_path is None or sheet_name is None:
+            print("Error: Could not generate transmittal file. Aborting PDF export.")
             return
 
-        print(f"Opening file: {excel_abs_path}")
+        currentDir = os.path.abspath(".")
+        pattern = r"\btransmittal (\d{6})\.xlsx\b"
+        match = re.search(pattern, excel_path, re.IGNORECASE)
+        if match:
+            pdf_name = f"Transmittal {match.group(1)}.pdf"
+            pdf_path = os.path.join(currentDir, pdf_name)
+        else:
+            print("Transmittal filename does not match expected pattern.")
+            print("Please check the name matches: Transmittal YYMMDD.xlsx")
+            return
 
-        # Start an instance of Excel
-        excel = win32com.client.Dispatch("Excel.Application")
-        # Keep the application hidden
-        excel.Visible = False
-        excel.DisplayAlerts = False  # Suppress warning dialogs
+        print(f"\nConverting '{sheet_name}' from '{excel_path}' to PDF using MS Excel...")
 
-        # Open the workbook with error handling
+        excel = None  # Initialize excel variable
+        workbook = None # Initialize workbook variable
         try:
-            workbook = excel.Workbooks.Open(excel_abs_path, ReadOnly=True, IgnoreReadOnlyRecommended=True)
+            # Get absolute paths, which are required for COM
+            excel_abs_path = os.path.abspath(excel_path).replace("/", "\\")
+            pdf_abs_path = os.path.abspath(pdf_path).replace("/", "\\")
+
+            # CRITICAL: Verify the file exists before attempting to open
+            if not os.path.exists(excel_abs_path):
+                print(f"Error: File not found at '{excel_abs_path}'")
+                return
+
+            print(f"Opening file: {excel_abs_path}")
+
+            # Start an instance of Excel
+            excel = win32com.client.Dispatch("Excel.Application")
+            # Keep the application hidden
+            excel.Visible = False
+            excel.DisplayAlerts = False  # Suppress warning dialogs
+
+            # Open the workbook with error handling
+            try:
+                workbook = excel.Workbooks.Open(excel_abs_path, ReadOnly=True, IgnoreReadOnlyRecommended=True)
+            except Exception as e:
+                print(f"Error opening workbook: {e}")
+                print(f"File path: {excel_abs_path}")
+                raise
+
+            # Select the specific worksheet
+            worksheet = workbook.Worksheets[sheet_name]
+
+            # --- Set Page Setup ---
+            # xlPaperA4 has a value of 9
+            worksheet.PageSetup.PaperSize = 9 
+            # Default margins are used automatically.
+
+            # --- Export to PDF ---
+            # xlTypePDF has a value of 0
+            worksheet.ExportAsFixedFormat(0, pdf_abs_path)
+            
+            print(f"Successfully saved PDF to '{pdf_abs_path}'")
+
+            workbook.Close(SaveChanges=False)
+            excel.Quit()
+            print("Excel application closed.")
+
         except Exception as e:
-            print(f"Error opening workbook: {e}")
-            print(f"File path: {excel_abs_path}")
-            raise
-
-        # Select the specific worksheet
-        worksheet = workbook.Worksheets[sheet_name]
-
-        # --- Set Page Setup ---
-        # xlPaperA4 has a value of 9
-        worksheet.PageSetup.PaperSize = 9 
-        # Default margins are used automatically.
-
-        # --- Export to PDF ---
-        # xlTypePDF has a value of 0
-        worksheet.ExportAsFixedFormat(0, pdf_abs_path)
-        
-        print(f"Successfully saved PDF to '{pdf_abs_path}'")
-
-        workbook.Close(SaveChanges=False)
-        excel.Quit()
-        print("Excel application closed.")
+            print(f"An error occurred during PDF conversion: {e}")
 
     except Exception as e:
-        print(f"An error occurred during PDF conversion: {e}")        
+        print(f"Unexpected error in Save_as_PDF: {e}")
 
-if __name__ == "__main__": 
-    print("Transmit_Auto1000 Start")    
-    Save_as_PDF()
+if __name__ == "__main__":    
+        
+    print("Transmit_Auto1000 Start")
     print("Created by Edd Palencia-Vanegas - June 2024. All rights reserved.")
     print("Version 5.1 - 13/01/2026")
+    
