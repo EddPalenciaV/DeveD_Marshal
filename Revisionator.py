@@ -67,6 +67,8 @@ def is_currentDirectory():
     return directory
 
 def list_drawings():    
+    directory = is_currentDirectory()
+    
     list_of_drawings = []
     
     # Iterate over files in the directory
@@ -81,7 +83,7 @@ def remove_revision_tags():
     
     drawings = list_drawings()
 
-    pattern_revision_tag = r'\[[A-Za-z0-9]\] '
+    pattern_revision_tag = r'\[[A-Za-z0-9]*\] '
 
     for i in range(len(drawings)):
         search_pattern = re.search(pattern_revision_tag, drawings[i])

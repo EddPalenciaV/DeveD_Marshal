@@ -36,12 +36,16 @@ class MainWindow(QMainWindow):
         self.setFixedSize(QSize(300, 200))
         layout = QVBoxLayout() # Vertical Box Layout
         self.label = QLabel("DeveD - Marshal\nCreated by Edd Palencia-Vanegas - January 2026\nVersion 1.0 - 22/01/2026")
-        self.button = QPushButton("Generate Transmittal PDF")
-        self.button.clicked.connect(self.Transmittal_PDF)
+        
+        self.button_Transmittal = QPushButton("Generate Transmittal PDF")
+        self.button_Transmittal.clicked.connect(self.Transmittal_PDF)
+
+        self.button_Revisionator = QPushButton("Fix Revision Tags")
+        self.button_Revisionator.clicked.connect(self.Revision_Fix)
 
         layout.addWidget(self.label)
-        layout.addWidget(self.button)
-
+        layout.addWidget(self.button_Transmittal)
+        layout.addWidget(self.button_Revisionator)
         window = QWidget()
         window.setLayout(layout)
 
@@ -66,6 +70,22 @@ class MainWindow(QMainWindow):
             # Show the dialog with all accumulated text
             self.output_dialog.exec()
 
+    def Revision_Fix(self):
+        # Clear previous output
+        self.output_dialog.text_edit.clear()
+        
+        # Redirect stdout to the dialog
+        sys.stdout = OutputCapture(self.output_dialog.text_edit)
+
+        try:
+            remove_revision_tags()
+            tag_drawings()
+        finally:
+            # Restore stdout
+            sys.stdout = sys.__stdout__
+            
+            # Show the dialog with all accumulated text
+            self.output_dialog.exec()
 
 if __name__ == "__main__": 
     directory = is_currentDirectory()
