@@ -35,7 +35,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("MarshalleDD - Sort, Tag and Report Drawings")
         self.setFixedSize(QSize(300, 200))
         layout = QVBoxLayout() # Vertical Box Layout
-        self.label = QLabel("DeveD - Marshal\nCreated by Edd Palencia-Vanegas - January 2026\nVersion 1.0 - 13/01/2026")
+        self.label = QLabel("DeveD - Marshal\nCreated by Edd Palencia-Vanegas - January 2026\nVersion 1.0 - 22/01/2026")
         self.button = QPushButton("Generate Transmittal PDF")
         self.button.clicked.connect(self.Transmittal_PDF)
 

@@ -478,5 +478,5 @@ if __name__ == "__main__":
         
     print("Transmit_Auto1000 Start")
     print("Created by Edd Palencia-Vanegas - June 2024. All rights reserved.")
-    print("Version 5.1 - 13/01/2026")
+    print("Version 5.2 - 27/01/2026")
     
