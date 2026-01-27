@@ -33,9 +33,13 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("MarshalleDD - Sort, Tag and Report Drawings")
-        self.setFixedSize(QSize(300, 200))
+        self.setFixedSize(QSize(300, 350))
         layout = QVBoxLayout() # Vertical Box Layout
         self.label = QLabel("DeveD - Marshal\nCreated by Edd Palencia-Vanegas - January 2026\nVersion 1.0 - 22/01/2026")
+        
+        #TODO: Make this button bigger and add different colour
+        self.button_Marshalledd = QPushButton("MarshalleDD")
+        self.button_Marshalledd.clicked.connect(self.MarshalleDD)
         
         self.button_Transmittal = QPushButton("Generate Transmittal PDF")
         self.button_Transmittal.clicked.connect(self.Transmittal_PDF)
@@ -47,6 +51,7 @@ class MainWindow(QMainWindow):
         self.button_Revisionator.clicked.connect(self.Revision_Fix)
 
         layout.addWidget(self.label)
+        layout.addWidget(self.button_Marshalledd)
         layout.addWidget(self.button_Transmittal)
         layout.addWidget(self.button_Supersede_Drawings)
         layout.addWidget(self.button_Revisionator)        
@@ -57,6 +62,36 @@ class MainWindow(QMainWindow):
 
         # Create output dialog as instance variable
         self.output_dialog = OutputDialog(self)
+
+    def MarshalleDD(self):
+        # Clear previous output
+        self.output_dialog.text_edit.clear()
+        
+        # Redirect stdout to the dialog
+        sys.stdout = OutputCapture(self.output_dialog.text_edit)
+
+        # Pattern that identifies a civil drawing
+        civil_Pattern = r'-C-'
+        # Pattern that identifies a architectural drawing
+        arch_Pattern = r'-A-'
+        # Pattern that identifies a structural drawing
+        struct_Pattern = r'-S-'
+
+        try:
+            remove_revision_tags()
+            tag_drawings()
+
+            supersede_drawings(civil_Pattern, set_SS_directory("CIVIL"))
+            supersede_drawings(arch_Pattern, set_SS_directory("ARCHITECTURAL"))
+            supersede_drawings(struct_Pattern, set_SS_directory("STRUCTURAL"))
+
+            Save_as_PDF(parent_window=self)
+        finally:
+            # Restore stdout
+            sys.stdout = sys.__stdout__
+            
+            # Show the dialog with all accumulated text
+            self.output_dialog.exec()
 
     def Transmittal_PDF(self):
         # Clear previous output
