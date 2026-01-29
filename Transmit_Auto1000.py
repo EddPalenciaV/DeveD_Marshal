@@ -9,7 +9,7 @@ import win32com.client
 from openpyxl import load_workbook
 from pathlib import Path
 from datetime import datetime
-from PyQt6.QtWidgets import QInputDialog, QMessageBox
+from PySide6.QtWidgets import QInputDialog, QMessageBox
 
 def find_excel_transmittal():
     print("Searching for Transmittal Excel file...")        

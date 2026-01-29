@@ -3,8 +3,8 @@ from Revisionator import remove_revision_tags, tag_drawings
 from pdf_Organiser import supersede_drawings, set_SS_directory, is_currentDirectory
 from Transmit_Auto1000 import Save_as_PDF
 from io import StringIO
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QMainWindow, QDialog, QTextEdit, QInputDialog, QMessageBox
-from PyQt6.QtCore import QSize
+from PySide6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QMainWindow, QDialog, QTextEdit, QInputDialog, QMessageBox
+from PySide6.QtCore import Qt
 
 class OutputCapture(StringIO):
     def __init__(self, text_widget):
@@ -32,13 +32,32 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("MarshalleDD - Sort, Tag and Report Drawings")
-        self.setFixedSize(QSize(300, 350))
-        layout = QVBoxLayout() # Vertical Box Layout
-        self.label = QLabel("DeveD - Marshal\nCreated by Edd Palencia-Vanegas - January 2026\nVersion 1.0 - 22/01/2026")
+        self.setWindowTitle("MarshalleDD")
+        self.setFixedSize(300, 300)
+        # Set window background color
+        self.setStyleSheet("background-color: #333333;")        
+
+        self.label = QLabel("DeveD\nMarshalleDD - Sort, Tag and Report Drawings\nCreated by Edd Palencia-Vanegas - January 2026\nVersion 1.0 - 22/01/2026")        
         
-        #TODO: Make this button bigger and add different colour
         self.button_Marshalledd = QPushButton("MarshalleDD")
+        self.button_Marshalledd.setFixedSize(280, 60)  # Width, Height
+        self.button_Marshalledd.setStyleSheet("""
+            QPushButton {
+                background-color: #4CAF50;
+                color: white;
+                font-size: 16px;
+                font-weight: bold;
+                border: 2px solid #2E7D32;
+                border-radius: 6px;
+                padding: 5px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+            QPushButton:pressed {
+                background-color: #1b5e20;
+            }
+        """)
         self.button_Marshalledd.clicked.connect(self.MarshalleDD)
         
         self.button_Transmittal = QPushButton("Generate Transmittal PDF")
@@ -50,8 +69,10 @@ class MainWindow(QMainWindow):
         self.button_Revisionator = QPushButton("Fix Revision Tags")
         self.button_Revisionator.clicked.connect(self.Revision_Fix)
 
+        layout = QVBoxLayout() # Vertical Box Layout
         layout.addWidget(self.label)
         layout.addWidget(self.button_Marshalledd)
+        layout.addSpacing(15)
         layout.addWidget(self.button_Transmittal)
         layout.addWidget(self.button_Supersede_Drawings)
         layout.addWidget(self.button_Revisionator)        
