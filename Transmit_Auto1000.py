@@ -10,6 +10,7 @@ from openpyxl import load_workbook
 from pathlib import Path
 from datetime import datetime
 from PySide6.QtWidgets import QInputDialog, QMessageBox
+from pdf_Organiser import is_currentDirectory
 
 def find_excel_transmittal():
     print("Searching for Transmittal Excel file...")        
@@ -65,30 +66,31 @@ def find_excel_transmittal():
         print(f"An unexpected error occurred: {e}")
     return os.path.join(rootDirectory, "Transmittal_TEMPLATE.xlsx")
 
-def Catch_Drawings():
-    print("Searching for drawings in current folder and subfolders...")    
-    # Define pattern of file name that ends in .pdf and has a character or digit inside square brackets
-    glob_pattern = "*[[]?*[]]*.pdf"
-
-    # Strict regex to validate bracket content
-    regex_pattern = re.compile(r"\[[A-Za-z0-9]+\].*\.pdf$", re.IGNORECASE)
-
-    # Find all PDFs matching the glob pattern
-    all_matches = glob.glob(glob_pattern)
+#TODO: When department parameter is None, get all drawings (PENDING UNTIL GETTING NEW TRANSMITTAL FORMAT)
+def Catch_Drawings(dep, dep_name):
+    print("Searching for drawings in current folder")
+    directory = is_currentDirectory()
     
-    # Filter with regex to ensure bracket content is alphanumeric only
+    bracket_pattern = re.compile(r"\[[A-Za-z0-9]*\]", re.IGNORECASE)
+    dep_pattern = re.compile(rf"-{dep}-")
+    
+    # Iterate over files in the directory
     rawListDrawings = []
-    for file_path in all_matches:
-        filename = os.path.basename(file_path)
-        if regex_pattern.search(filename):
-            # Store full absolute path
-            rawListDrawings.append(os.path.abspath(file_path))
+    for filename in os.listdir(directory):
+        full_path = os.path.join(directory, filename)
+        # Skip if not a file
+        if not os.path.isfile(full_path):
+            continue
+        # Check if file is a PDF, has the department pattern and has revision brackets
+        if filename.lower().endswith('.pdf') and dep_pattern.search(filename) and bracket_pattern.search(filename):
+            print(f"Found PDF file: {filename}")
+            rawListDrawings.append(os.path.abspath(full_path))
 
     if rawListDrawings:
-        print(f"Found {len(rawListDrawings)} drawings in the current folder.") 
+        print(f"Found {len(rawListDrawings)} {dep_name} drawings in the current folder.") 
         return rawListDrawings
     else:        
-        raise ValueError("No PDF drawings found to process.")
+        raise ValueError(f"No PDF {dep_name} drawings found to process.")
 
 def Request_Get_Date(parent_window=None):
     rootDirectory = os.path.abspath(".")
@@ -206,6 +208,7 @@ def Update_Transmittal(parent_window=None):
                 print("CIVIL sheet found.")
                 worksheet = workbook.sheets["CIVIL"]
                 sheet_name = "CIVIL"
+                dep = "C"
             # else:
             #     raise ValueError("Sheet 'CIVIL' not found in the Excel file. Check sheet name spelling")
             break
@@ -215,6 +218,7 @@ def Update_Transmittal(parent_window=None):
                 print("ARCHITECT sheet found.")
                 worksheet = workbook.sheets["ARCHITECT"]
                 sheet_name = "ARCHITECT"
+                dep = "A"
             # else:
             #     raise ValueError("Sheet 'ARCHITECT' not found in the Excel file. Check sheet name spelling")
             break
@@ -224,6 +228,7 @@ def Update_Transmittal(parent_window=None):
                 print("STRUCTURE sheet found.")
                 worksheet = workbook.sheets["STRUCTURE"]
                 sheet_name = "STRUCTURE"
+                dep = "S"
             # else:
             #     raise ValueError("Sheet 'STRUCTURE' not found in the Excel file. Check sheet name spelling")
             break
@@ -250,7 +255,7 @@ def Update_Transmittal(parent_window=None):
 
     ######### Compare PDF vs Excel names, update revision when matched and add new drawings ##########
     # Get revision from raw list of PDF drawings
-    rawlist_PDF = Catch_Drawings()
+    rawlist_PDF = Catch_Drawings(dep, sheet_name)
 
     for file_Name in rawlist_PDF:
         print(f"\nProcessing drawing file: {file_Name}")

@@ -99,12 +99,12 @@ class MainWindow(QMainWindow):
         struct_Pattern = r'-S-'
 
         try:
-            remove_revision_tags()
-            tag_drawings()
-
             supersede_drawings(civil_Pattern, set_SS_directory("CIVIL"))
             supersede_drawings(arch_Pattern, set_SS_directory("ARCHITECTURAL"))
             supersede_drawings(struct_Pattern, set_SS_directory("STRUCTURAL"))
+
+            remove_revision_tags()
+            tag_drawings()            
 
             Save_as_PDF(parent_window=self)
         finally:
