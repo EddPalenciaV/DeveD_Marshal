@@ -3,8 +3,9 @@ from Revisionator import remove_revision_tags, tag_drawings
 from pdf_Organiser import supersede_drawings, set_SS_directory, is_currentDirectory
 from Transmit_Auto1000 import Save_as_PDF
 from io import StringIO
-from PySide6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QMainWindow, QDialog, QTextEdit, QInputDialog, QMessageBox
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QMainWindow, QDialog, QTextEdit, QInputDialog, QMessageBox, QSplashScreen
+from PySide6.QtGui import QPixmap, QFont, QColor
+from PySide6.QtCore import Qt, QTimer
 
 class OutputCapture(StringIO):
     def __init__(self, text_widget):
@@ -37,7 +38,10 @@ class MainWindow(QMainWindow):
         # Set window background color
         self.setStyleSheet("background-color: #333333;")        
 
-        self.label = QLabel("DeveD\nMarshalleDD - Sort, Tag and Report Drawings\nCreated by Edd Palencia-Vanegas - January 2026\nVersion 1.0 - 22/01/2026")        
+        self.labelTop = QLabel("DeveD\nMarshalleDD - Sort, Tag and Report Drawings")
+        self.labelTop.setAlignment(Qt.AlignCenter)
+
+        self.labelBottom = QLabel("Created by Edd Palencia-Vanegas - January 2026\nVersion 1.0 - 22/01/2026")
         
         self.button_Marshalledd = QPushButton("MarshalleDD")
         self.button_Marshalledd.setFixedSize(280, 60)  # Width, Height
@@ -58,24 +62,24 @@ class MainWindow(QMainWindow):
                 background-color: #1b5e20;
             }
         """)
-        self.button_Marshalledd.clicked.connect(self.MarshalleDD)
-        
-        self.button_Transmittal = QPushButton("Generate Transmittal PDF")
-        self.button_Transmittal.clicked.connect(self.Transmittal_PDF)
+        self.button_Marshalledd.clicked.connect(self.MarshalleDD)  
 
-        self.button_Supersede_Drawings = QPushButton("Supersede Drawings")
+        self.button_Supersede_Drawings = QPushButton("1. Supersede Drawings")
         self.button_Supersede_Drawings.clicked.connect(self.pdf_Superseder)
 
-        self.button_Revisionator = QPushButton("Fix Revision Tags")
+        self.button_Revisionator = QPushButton("2. Fix Revision Tags")
         self.button_Revisionator.clicked.connect(self.Revision_Fix)
 
+        self.button_Transmittal = QPushButton("3. Generate Transmittal PDF")
+        self.button_Transmittal.clicked.connect(self.Transmittal_PDF)
+
         layout = QVBoxLayout() # Vertical Box Layout
-        layout.addWidget(self.label)
+        layout.addWidget(self.labelTop)
         layout.addWidget(self.button_Marshalledd)
-        layout.addSpacing(15)
-        layout.addWidget(self.button_Transmittal)
+        layout.addSpacing(15)        
         layout.addWidget(self.button_Supersede_Drawings)
-        layout.addWidget(self.button_Revisionator)        
+        layout.addWidget(self.button_Revisionator)
+        layout.addWidget(self.button_Transmittal)
         window = QWidget()
         window.setLayout(layout)
 
@@ -99,9 +103,9 @@ class MainWindow(QMainWindow):
         struct_Pattern = r'-S-'
 
         try:
-            supersede_drawings(civil_Pattern, set_SS_directory("CIVIL"))
-            supersede_drawings(arch_Pattern, set_SS_directory("ARCHITECTURAL"))
-            supersede_drawings(struct_Pattern, set_SS_directory("STRUCTURAL"))
+            supersede_drawings(civil_Pattern, set_SS_directory(""))
+            supersede_drawings(arch_Pattern, set_SS_directory(""))
+            supersede_drawings(struct_Pattern, set_SS_directory(""))
 
             remove_revision_tags()
             tag_drawings()            
@@ -202,11 +206,26 @@ class MainWindow(QMainWindow):
             # Show the dialog with all accumulated text
             self.output_dialog.exec()
 
-if __name__ == "__main__": 
-    directory = is_currentDirectory()
+def show_splash_screen(app):
+    """Display a splash screen with custom image"""
+    # Load DeveD Logo
+    pixmap = QPixmap("C:\\Users\\eddpa\\Desktop\\DeveD_Marshal\\MarshaleDD_small001.png")
+    
+    splash = QSplashScreen(pixmap)
+    splash.setWindowFlags(splash.windowFlags() | Qt.WindowStaysOnTopHint)
+    splash.show()
+    
+    splash.showMessage("Loading MarshalleDD v1.0...", Qt.AlignBottom | Qt.AlignCenter, Qt.white)
+    
+    app.processEvents()
+    return splash
 
+if __name__ == "__main__":     
     app = QApplication(sys.argv)
+    splash = show_splash_screen(app)    
     window = MainWindow()
     window.show()
+    # Show main window after 2000 milliseconds (2 seconds)
+    QTimer.singleShot(1500, lambda: (window.show(), splash.finish(window)))
     app.exec()
     

@@ -91,7 +91,17 @@ def remove_revision_tags():
                 for j in range(len(drawings[i])):
                     if j == search_pattern.start():
                         new_name = drawings[i][:j] + drawings[i][search_pattern.end():]
-                        os.rename(drawings[i], new_name)
+                        # Skip if target already exists
+                        if os.path.exists(new_name):
+                            print(f"Skipping rename, target exists: {new_name}")
+                            continue
+                        try:
+                            os.rename(drawings[i], new_name)
+                        except FileExistsError:
+                            print(f"Skipping rename, target exists (race): {new_name}")
+                        except OSError as e:
+                            print(f"Failed to rename {drawings[i]} -> {new_name}: {e}")
+                        # os.rename(drawings[i], new_name)
     print("Revision tags removed from all drawings.")
 
 def revisions_from_Drawings():

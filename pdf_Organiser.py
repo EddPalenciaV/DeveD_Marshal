@@ -107,7 +107,6 @@ def supersede_drawings(charkey, ss_directory):
     supersede_numerical(charkey, ss_directory)
     supersede_Num_vs_Alpha(charkey, ss_directory)
 
-#TODO: Refactor repetitive code again into one function with parameters
 # THIS FUNCTION GROUPS AND ORGANISES .PDF FILES BY THEIR ALPHABETICAL VALUE INSIDE THE BRACKETS ---------------------------------------------
 def supersede_alphabetical(charkey, ss_directory):
     directory = is_currentDirectory()
@@ -238,8 +237,7 @@ if __name__ == "__main__":
     arch_Pattern = r'-A-'
     # Pattern that identifies a structural drawing
     struct_Pattern = r'-S-'
-
-    #TODO: Prompt user if they want dated folder or everything in _SS
+    
     # Supersede drawings by department
     supersede_drawings(civil_Pattern, set_SS_directory("CIVIL"))
     supersede_drawings(arch_Pattern, set_SS_directory("ARCHITECTURAL"))
