@@ -1,4 +1,7 @@
 /.venv
 /.pdf
 /Dummy Folder
+/dist
 /.xlsx
+/MarshalleDD.py
+/MarshalleDD.spec
