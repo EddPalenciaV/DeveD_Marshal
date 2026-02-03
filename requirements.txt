@@ -1,0 +1,23 @@
+# MarshalleDD - Professional Drawing Management System
+# Requirements for DeveD Software Pty Ltd
+# Created: January 2026
+
+# Core GUI Framework
+PySide6>=6.5.0
+
+# Excel Processing
+openpyxl>=3.10.0
+xlwings>=0.30.0
+pywin32>=305
+
+# PDF & Image Processing
+PyMuPDF>=1.23.0
+Pillow>=10.0.0
+
+# Optional: For code encryption and licensing (deployment only)
+# Uncomment when building encrypted executables
+# pyarmor>=8.0.0
+
+# Optional: For creating standalone executables (deployment only)
+# Uncomment when packaging as .exe
+# PyInstaller>=6.0.0
