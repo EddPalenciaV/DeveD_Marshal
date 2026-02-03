@@ -2,6 +2,14 @@
 /.pdf
 /Dummy Folder
 /dist
+/TUTORIAL
+/venv
+/build
+/__pycache__
 /.xlsx
 /MarshalleDD.py
 /MarshalleDD.spec
+/desktop.ini
+/Executable commands.txt
+/MarshaleDD_small001.png
+/pyarmor.bug.log
